@@ -721,21 +721,127 @@
             }
         ];
 
+        // Fictional locations by vehicle category
+        const fictionalLocations = {
+            terrestres: [
+                "Rua das Flores, 123 - Centro, Cidade Nova",
+                "Avenida Principal, 456 - Bairro Industrial, Metrópole",
+                "Rodovia do Sol, Km 50 - Zona Rural, Campo Alegre",
+                "Praça da Liberdade, S/N - Vila Antiga, Porto Seguro",
+                "Estrada da Montanha, 789 - Povoado Alto, Serra Azul",
+                "Parque Tecnológico, Bloco C - Inovação City",
+                "Complexo Logístico Sul - Armazém 5",
+                "Centro Histórico - Largo da Matriz",
+                "Distrito Comercial - Shopping Center",
+                "Área Residencial Alpha - Condomínio Fechado"
+            ],
+            aereos: [
+                "Aeroporto Internacional de Skyport - Pista 01",
+                "Base Aérea Secreta - Hangar 7",
+                "Sobrevoando os Alpes Suíços - Altitude 10.000m",
+                "Espaço Aéreo Restrito - Ponto de Controle Delta",
+                "Heliporto Central - Cobertura do Edifício Platinum",
+                "Corredor Aéreo Atlântico - FL350",
+                "Zona de Testes de Voo - Deserto de Nevada",
+                "Aproximação para Aeroporto de Congonhas",
+                "Patrulha Aérea sobre a Costa",
+                "Formação de Voo sobre o Grand Canyon"
+            ],
+            ferroviarios: [
+                "Estação Central - Plataforma 3",
+                "Linha Férrea Transcontinental - Trecho Leste",
+                "Pátio de Manobras - Via 12",
+                "Túnel da Serra - Saída Norte",
+                "Ponte Ferroviária sobre o Rio Grande",
+                "Terminal de Cargas - Pátio Principal",
+                "Viaduto da Cidade - Sentido Norte",
+                "Depósito de Locomotivas - Oficina 2",
+                "Cruzamento de Nível - Sinal Verde",
+                "Estação de Manutenção - Via de Desvio"
+            ],
+            maritimos: [
+                "Porto de Águas Profundas - Cais 5",
+                "Oceano Atlântico - Latitude 30°N, Longitude 40°W",
+                "Baía dos Golfinhos - Próximo ao Farol Antigo",
+                "Mar do Caribe - Rota de Navegação Comercial",
+                "Estaleiro Naval - Doca Seca 2",
+                "Estreito de Gibraltar - Passagem Segura",
+                "Águas Internacionais - Zona de Pesca",
+                "Canal do Panamá - Eclusa Miraflores",
+                "Ancorado na Enseada Protegida",
+                "Navegando pelo Rio Amazonas"
+            ],
+            especiais: [ // Includes amphibious and rocket
+                "Base de Testes Confidenciais - Setor Gama",
+                "Área de Lançamento Espacial - Plataforma 1",
+                "Lago Escondido - Margem Oeste",
+                "Centro de Pesquisas Subaquáticas - Laboratório Flutuante",
+                "Zona de Treinamento Militar - Campo Aberto",
+                "Pântano dos Jacarés - Operação Anfíbia",
+                "Plataforma de Lançamento Oceânica - Ponto X",
+                "Cratera Lunar Simulada - Missão de Exploração",
+                "Floresta Densa - Reconhecimento Terrestre",
+                "Desfiladeiro Rochoso - Escalada Vertical"
+            ],
+            militares: [
+                "Base Militar Alpha - Setor de Operações",
+                "Zona de Conflito - Linha de Frente",
+                "Submarino em Patrulha - Profundidade 150m",
+                "Porta-Aviões em Missão - Convés de Voo",
+                "Espaço Aéreo de Defesa - Ponto de Interceptação",
+                "Campo de Treinamento de Artilharia - Alvo 3",
+                "Posto Avançado de Observação - Colina 5",
+                "Comboio em Movimento - Rota Segura",
+                "Operação Noturna - Infiltração Tática",
+                "Quartel General - Sala de Comando"
+            ],
+            inteligentes: [ // Can be anywhere, but specific smart locations
+                "Centro de Dados Principal - Servidor 01",
+                "Rede Urbana Inteligente - Ponto de Acesso 3",
+                "Estação de Recarga Autônoma - Vaga 4",
+                "Laboratório de IA - Área de Testes",
+                "Conectado à Rede Global de Sensores",
+                "Zona de Entrega Autônoma - Ponto de Coleta",
+                "Estacionamento Inteligente - Nível 2",
+                "Monitorando Tráfego - Cruzamento Principal",
+                "Realizando Mapeamento 3D - Área Central",
+                "Em Patrulha de Segurança - Setor Residencial"
+            ]
+        };
+
+
         // Estado dos veiculos
         let vehicleStates = {};
         let currentCategory = 'all';
         let searchTerm = '';
         let logEntries = [];
 
+        // Interval for location updates during movement (in milliseconds)
+        const LOCATION_UPDATE_INTERVAL = 30000; // 30 seconds
+
+        // Initial locations for vehicles when they are not moving
+        const initialLocations = {
+            terrestres: "Garagem Principal",
+            aereos: "Hangar Central",
+            ferroviarios: "Pátio de Estacionamento",
+            maritimos: "Doca Seca",
+            especiais: "Base de Operações",
+            militares: "Quartel General",
+            inteligentes: "Estação de Carregamento"
+        };
+
         // Inicializar estados
         function initVehicleStates() {
             vehicles.forEach(v => {
                 vehicleStates[v.id] = {
                     powered: false,
-                    location: "Desconhecida",
+                    location: initialLocations[v.category] || "Desconhecida", // Set initial location
                     connected: false,
                     secure: false,
-                    moving: false
+                    moving: false,
+                    speed: 0,
+                    moveInterval: null, // For speed updates
+                    locationUpdateInterval: null // For location updates
                 };
             });
         }
@@ -758,7 +864,7 @@
             container.innerHTML = logEntries.map(entry => `
                 <div class="log-entry">
                     <span class="timestamp">[${entry.time}]</span> 
-                    ${entry.vehicle ? '<strong>${entry.vehicle}</strong>: ' : ''}${entry.message}
+                    ${entry.vehicle ? `<strong>${entry.vehicle}</strong>: ` : ''}${entry.message}
                 </div>
             `).join('');
         }
@@ -770,10 +876,10 @@
             const connected = Object.values(vehicleStates).filter(s => s.connected).length;
             const secure = Object.values(vehicleStates).filter(s => s.secure).length;
 
-            document.getElementById('totalVehicles').textContent = '${total} Veiculos';
-            document.getElementById('activeVehicles').textContent = '${active} Ativos';
-            document.getElementById('connectedVehicles').textContent = '${connected} Conectados';
-            document.getElementById('secureVehicles').textContent = '${secure} Seguros';
+            document.getElementById('totalVehicles').textContent = `${total} Veiculos`;
+            document.getElementById('activeVehicles').textContent = `${active} Ativos`;
+            document.getElementById('connectedVehicles').textContent = `${connected} Conectados`;
+            document.getElementById('secureVehicles').textContent = `${secure} Seguros`;
         }
 
         // Renderizar veiculos
@@ -795,6 +901,39 @@
                 const isActive = state.powered;
                 const isMoving = state.moving;
 
+                // Collect all specs, including base properties
+                const allSpecs = {
+                    "Capacidade": `${vehicle.capacity} pessoas`,
+                    "Combustivel": vehicle.fuel,
+                    ...vehicle.specs
+                };
+
+                // Add speed if moving
+                if (isMoving) {
+                    allSpecs["Velocidade"] = `${state.speed} km/h`;
+                }
+
+                // Determine available actions
+                let actionsHtml = '';
+                const specialActions = {
+                    "Tanque": "Disparar Projétil",
+                    "Submarino": "Lançar Torpedo",
+                    "Porta Avioes": "Lançar Aeronave",
+                    "Drone Militar": "Disparar Arma",
+                    "Drone Inteligente": "Ativar Câmera",
+                    "Caca Militar": "Manobra Evasiva",
+                    "Foguete": "Lançar ao Espaço"
+                };
+
+                if (specialActions[vehicle.type]) {
+                    actionsHtml += `
+                        <div class="spec-row">
+                            <span class="spec-label">Ação Especial:</span>
+                            <span class="spec-value">${specialActions[vehicle.type]}</span>
+                        </div>
+                    `;
+                }
+
                 return `
                     <div class="vehicle-card ${isActive ? 'active' : ''} ${isMoving ? 'moving' : ''}" id="vehicle-${vehicle.id}">
                         <div class="vehicle-header">
@@ -810,34 +949,27 @@
                         </div>
 
                         <div class="vehicle-specs">
-                            <div class="spec-row">
-                                <span class="spec-label">Capacidade:</span>
-                                <span class="spec-value">${vehicle.capacity} pessoas</span>
-                            </div>
-                            <div class="spec-row">
-                                <span class="spec-label">Combustivel:</span>
-                                <span class="spec-value">${vehicle.fuel}</span>
-                            </div>
-                            ${Object.entries(vehicle.specs || {}).map(([key, value]) => `
+                            ${Object.entries(allSpecs).map(([key, value]) => `
                                 <div class="spec-row">
                                     <span class="spec-label">${key}:</span>
                                     <span class="spec-value">${value}</span>
                                 </div>
                             `).join('')}
+                            <div class="spec-row">
+                                <span class="spec-label">Localizacao:</span>
+                                <span class="spec-value">${state.location}</span>
+                            </div>
                             ${vehicle.smart ? `
                                 <div class="spec-row">
-                                    <span class="spec-label">Localizacao:</span>
-                                    <span class="spec-value">${state.location}</span>
-                                </div>
-                                <div class="spec-row">
                                     <span class="spec-label">WiFi:</span>
-                                    <span class="spec-value">${state.connected ? '[CONNECTED]' : '[DISCONNECTED]'}</span>
+                                    <span class="spec-value">${state.connected ? '[CONECTADO]' : '[DESCONECTADO]'}</span>
                                 </div>
                                 <div class="spec-row">
                                     <span class="spec-label">Seguranca:</span>
-                                    <span class="spec-value">${state.secure ? '[SECURE]' : '[INSECURE]'}</span>
+                                    <span class="spec-value">${state.secure ? '[ATIVO]' : '[INATIVO]'}</span>
                                 </div>
                             ` : ''}
+                            ${actionsHtml}
                         </div>
 
                         <div class="vehicle-controls">
@@ -847,9 +979,9 @@
                             </button>
 
                             <button class="control-btn info" 
-                                    onclick="moveVehicle(${vehicle.id})"
-                                    ${!isActive || isMoving ? 'disabled' : ''}>
-                                Mover
+                                    onclick="toggleMove(${vehicle.id})"
+                                    ${!isActive ? 'disabled' : ''}>
+                                ${isMoving ? 'Parar' : 'Mover'}
                             </button>
 
                             ${['Tanque', 'Submarino', 'Porta Avioes', 'Drone Militar', 'Drone Inteligente', 'Caca Militar', 'Foguete'].includes(vehicle.type) ? `
@@ -896,14 +1028,18 @@
                 log('foi desligado.', vehicle.name);
                 state.connected = false;
                 state.secure = false;
+                if (state.moving) {
+                    toggleMove(vehicleId); // Stop moving if powered off
+                }
+                // Location remains the last known location
             }
 
             renderVehicles();
             updateStats();
         }
 
-        // Move vehicle
-        function moveVehicle(vehicleId) {
+        // Toggle Move / Stop
+        function toggleMove(vehicleId) {
             const vehicle = vehicles.find(v => v.id === vehicleId);
             const state = vehicleStates[vehicleId];
 
@@ -913,34 +1049,96 @@
             }
 
             if (state.moving) {
-                log('já está se movendo.', vehicle.name);
-                return;
-            }
-
-            state.moving = true;
-            renderVehicles();
-
-            let moveMessage = "está se movendo.";
-
-            if (vehicle.type === "Veiculo Anfibio") {
-                moveMessage = "pode se mover tanto em terra quanto na água.";
-            } else if (vehicle.category === "aereos") {
-                moveMessage = "está voando.";
-            } else if (vehicle.category === "maritimos") {
-                moveMessage = "está navegando.";
-            } else if (vehicle.category === "ferroviarios") {
-                moveMessage = "está nos trilhos.";
-            }
-
-            log(moveMessage, vehicle.name);
-
-            // Simula movimento por 3 segundos
-            setTimeout(() => {
+                // Stop the vehicle
+                clearInterval(state.moveInterval);
+                clearInterval(state.locationUpdateInterval);
                 state.moving = false;
+                state.speed = 0;
                 log('parou de se mover.', vehicle.name);
-                renderVehicles();
-            }, 3000);
+            } else {
+                // Start the vehicle moving
+                state.moving = true;
+                let speedRange = { min: 0, max: 0 };
+                let moveMessage = "";
+
+                let locationsList = fictionalLocations[vehicle.category];
+                if (!locationsList) {
+                    // Fallback for categories not explicitly listed, e.g., 'militares' or 'inteligentes'
+                    if (vehicle.type.includes("Anfibio")) {
+                        locationsList = fictionalLocations.especiais;
+                    } else if (vehicle.category === "militares") {
+                        locationsList = fictionalLocations.militares;
+                    } else if (vehicle.category === "inteligentes") {
+                        locationsList = fictionalLocations.inteligentes;
+                    } else {
+                        locationsList = fictionalLocations.terrestres; // Default to terrestrial if no specific list
+                    }
+                }
+
+                // Set initial location when starting to move
+                const initialMoveLocation = locationsList[Math.floor(Math.random() * locationsList.length)];
+                state.location = initialMoveLocation;
+
+                switch(vehicle.category) {
+                    case "terrestres":
+                        speedRange = { min: 30, max: 120 };
+                        moveMessage = `está se movendo para ${state.location}.`;
+                        break;
+                    case "aereos":
+                        speedRange = { min: 300, max: 900 };
+                        moveMessage = `está voando em direção a ${state.location}.`;
+                        break;
+                    case "ferroviarios":
+                        speedRange = { min: 60, max: 200 };
+                        moveMessage = `está nos trilhos rumo a ${state.location}.`;
+                        break;
+                    case "maritimos":
+                        speedRange = { min: 10, max: 40 };
+                        moveMessage = `está navegando para ${state.location}.`;
+                        break;
+                    case "especiais": // Amphibious, Rocket
+                        if (vehicle.type === "Veiculo Anfibio") {
+                            speedRange = { min: 20, max: 80 };
+                            moveMessage = `está se movendo (terra/água) para ${state.location}.`;
+                        } else if (vehicle.type === "Foguete") {
+                            speedRange = { min: 1000, max: 5000 }; // Very high speed for rocket
+                            moveMessage = `está sendo lançado de ${state.location}.`;
+                        }
+                        break;
+                    case "militares":
+                        speedRange = { min: 50, max: 400 };
+                        moveMessage = `está em missão para ${state.location}.`;
+                        break;
+                    case "inteligentes":
+                        speedRange = { min: 20, max: 150 };
+                        moveMessage = `está se deslocando autonomamente para ${state.location}.`;
+                        break;
+                    default:
+                        speedRange = { min: 30, max: 120 };
+                        moveMessage = `está se movendo para ${state.location}.`;
+                        break;
+                }
+
+                state.speed = Math.floor(Math.random() * (speedRange.max - speedRange.min + 1)) + speedRange.min;
+                log(`${moveMessage} Velocidade: ${state.speed} km/h.`, vehicle.name);
+
+                // Simulate continuous movement by updating speed
+                state.moveInterval = setInterval(() => {
+                    state.speed = Math.floor(Math.random() * (speedRange.max - speedRange.min + 1)) + speedRange.min;
+                    renderVehicles();
+                }, 5000); // Update speed every 5 seconds for dynamic feel
+
+                // Update location periodically
+                state.locationUpdateInterval = setInterval(() => {
+                    const newLocation = locationsList[Math.floor(Math.random() * locationsList.length)];
+                    state.location = newLocation;
+                    log(`mudou de localização para ${newLocation}.`, vehicle.name);
+                    renderVehicles();
+                }, LOCATION_UPDATE_INTERVAL); // Update location every 30 seconds
+            }
+            renderVehicles();
         }
+
 
         // Perform special action
         function performSpecialAction(vehicleId) {
@@ -956,7 +1154,7 @@
 
             switch(vehicle.type) {
                 case "Tanque":
-                    actionMessage = 'disparou um projétil de ${vehicle.caliber}mm!';
+                    actionMessage = `disparou um projétil de ${vehicle.specs.Calibre}!`;
                     break;
                 case "Submarino":
                     actionMessage = "lançou um torpedo!";
@@ -965,14 +1163,16 @@
                     actionMessage = "lançou um avião de combate!";
                     break;
                 case "Drone Militar":
+                    actionMessage = `disparou ${vehicle.specs.Armamento}!`;
+                    break;
                 case "Drone Inteligente":
-                    actionMessage = 'disparou ${vehicle.weapon}!';
+                    actionMessage = `ativou a ${vehicle.specs.Sistema} para monitoramento!`;
                     break;
                 case "Caca Militar":
                     actionMessage = "realizou uma manobra evasiva supersônica!";
                     break;
                 case "Foguete":
-                    actionMessage = 'foi lançado ao espaço com ${vehicle.cargo}';
+                    actionMessage = `foi lançado ao espaço com ${vehicle.specs.Carga}`;
                     break;
                 default:
                     actionMessage = "executou ação especial.";
@@ -981,18 +1181,18 @@
             log(actionMessage, vehicle.name);
         }
 
-        // Update location
+        // Update location (manual update for smart vehicles)
         function updateLocation(vehicleId) {
             const vehicle = vehicles.find(v => v.id === vehicleId);
             const state = vehicleStates[vehicleId];
 
             if (!vehicle.smart) return;
 
-            const locations = ["Base Alpha", "Setor Beta", "Zona Gamma", "Porto Delta", "Aeroporto Echo"];
+            const locations = fictionalLocations.inteligentes; // Use intelligent locations for smart vehicles
             const newLocation = locations[Math.floor(Math.random() * locations.length)];
 
             state.location = newLocation;
-            log('agora está em ${newLocation}', vehicle.name);
+            log(`agora está em ${newLocation}`, vehicle.name);
             renderVehicles();
         }
 
@@ -1108,19 +1308,32 @@
                     capacity,
                     fuel,
                     emoji,
-                    specs: {}
+                    specs: {} // New vehicles start with empty specs
                 };
+
+                // Add specific specs based on type if needed for new vehicles
+                if (type.includes("Inteligente")) {
+                    newVehicle.smart = true;
+                    newVehicle.specs["Sistema"] = "Inteligente";
+                }
+                if (type === "Tanque") {
+                    newVehicle.specs["Calibre"] = "XXmm"; // Placeholder
+                }
+                // ... add more specific specs for other types as needed
 
                 vehicles.push(newVehicle);
                 vehicleStates[newId] = {
                     powered: false,
-                    location: "Desconhecida",
+                    location: initialLocations[category] || "Desconhecida", // Set initial location for new vehicle
                     connected: false,
                     secure: false,
-                    moving: false
+                    moving: false,
+                    speed: 0,
+                    moveInterval: null,
+                    locationUpdateInterval: null
                 };
 
-                log('Veículo cadastrado com sucesso: ${name}');
+                log(`Veículo cadastrado com sucesso: ${name}`);
 
                 e.target.reset();
                 document.getElementById('modalOverlay').classList.remove('active');
@@ -1134,6 +1347,3 @@
     </script>
 </body>
 </html>
-</content>
-</create_file>
-
