@@ -1,287 +1,1139 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Veículos - Interface</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
-  h1 { color: #333; }
-  select, button { padding: 8px; margin: 5px 0; font-size: 1em; }
-  #info, #output { background: #fff; padding: 15px; border-radius: 5px; margin-top: 10px; box-shadow: 0 0 5px #ccc; }
-  table { border-collapse: collapse; width: 100%; margin-top: 20px; background: #fff; }
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-  th { background: #eee; }
-  button.action-btn { margin-right: 10px; margin-top: 10px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gerenciamento de Frota - SaaS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7fa;
+            color: #2c3e50;
+            overflow: hidden;
+        }
+
+        .app {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #34495e;
+            color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .sidebar h2 {
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .nav-tab {
+            background: transparent;
+            border: none;
+            color: #ecf0f1;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-tab:hover {
+            background: #2c3e50;
+        }
+
+        .nav-tab.active {
+            background: #e74c3c;
+            color: white;
+            box-shadow: 0 0 10px #e74c3caa;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: #34495e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        header h1 span {
+            font-size: 2.2rem;
+        }
+
+        .search-box {
+            width: 280px;
+            padding: 10px 15px;
+            border: 2px solid #bdc3c7;
+            border-radius: 25px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            outline-offset: 2px;
+        }
+
+        .search-box:focus {
+            border-color: #e74c3c;
+            outline: none;
+        }
+
+        .stats-bar {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card {
+            background: #e74c3c;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
+            flex: 1;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .stat-card:nth-child(2) {
+            background: #27ae60;
+            box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .stat-card:nth-child(3) {
+            background: #2980b9;
+            box-shadow: 0 6px 15px rgba(41, 128, 185, 0.4);
+        }
+
+        .stat-card:nth-child(4) {
+            background: #8e44ad;
+            box-shadow: 0 6px 15px rgba(142, 68, 173, 0.4);
+        }
+
+        .content-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: #f4f7fa;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .vehicle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .vehicle-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px 20px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            position: relative;
+        }
+
+        .vehicle-card:hover {
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+            transform: translateY(-6px);
+        }
+
+        .vehicle-card.active {
+            border: 3px solid #e74c3c;
+            background: #fff5f5;
+        }
+
+        .vehicle-card.moving {
+            animation: pulseMove 1.5s infinite;
+            border-color: #f39c12 !important;
+            background: #fff8e1;
+        }
+
+        @keyframes pulseMove {
+            0%, 100% {
+                box-shadow: 0 0 10px #f39c12;
+            }
+            50% {
+                box-shadow: 0 0 20px #f39c12;
+            }
+        }
+
+        .vehicle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .vehicle-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            box-shadow: 0 0 6px;
+        }
+
+        .status-on {
+            background: #27ae60;
+            box-shadow: 0 0 10px #27ae60;
+        }
+
+        .status-off {
+            background: #e74c3c;
+            box-shadow: none;
+        }
+
+        .vehicle-type {
+            background: #8e44ad;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .vehicle-specs {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            background: #f9fafb;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #34495e;
+        }
+
+        .spec-label {
+            font-weight: 600;
+        }
+
+        .spec-value {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .vehicle-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            flex: 1;
+            min-width: 90px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .control-btn.primary {
+            background: #27ae60;
+            color: white;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.4);
+        }
+
+        .control-btn.danger {
+            background: #e74c3c;
+            color: white;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.4);
+        }
+
+        .control-btn.info {
+            background: #2980b9;
+            color: white;
+            box-shadow: 0 4px 10px rgba(41, 128, 185, 0.4);
+        }
+
+        .control-btn.warning {
+            background: #f39c12;
+            color: white;
+            box-shadow: 0 4px 10px rgba(243, 156, 18, 0.4);
+        }
+
+        .control-btn:hover:not(:disabled) {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .log-panel {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 12px;
+            max-height: 280px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .log-panel h3 {
+            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #ecf0f1;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 6px 12px;
+            border-left: 3px solid #e74c3c;
+            background: rgba(231, 76, 60, 0.15);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            line-height: 1.3;
+        }
+
+        .timestamp {
+            color: #95a5a6;
+            font-size: 0.85rem;
+            margin-right: 6px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 15px;
+            padding: 30px 40px;
+            width: 400px;
+            max-width: 90vw;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+
+        .modal h3 {
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #34495e;
+            text-align: center;
+        }
+
+        .modal form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal input,
+        .modal select {
+            padding: 12px 15px;
+            font-size: 1rem;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            transition: border-color 0.3s ease;
+            outline-offset: 2px;
+        }
+
+        .modal input:focus,
+        .modal select:focus {
+            border-color: #e74c3c;
+            outline: none;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .btn.primary {
+            background: #e74c3c;
+            color: white;
+            box-shadow: 0 6px 15px rgba(231, 76, 60, 0.5);
+        }
+
+        .btn.primary:hover {
+            background: #c0392b;
+        }
+
+        .btn.secondary {
+            background: #bdc3c7;
+            color: #2c3e50;
+        }
+
+        .btn.secondary:hover {
+            background: #95a5a6;
+        }
+
+        .btn-add-vehicle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 2.2rem;
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.6);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+            z-index: 1100;
+        }
+
+        .btn-add-vehicle:hover {
+            background: #c0392b;
+        }
+
+        .log-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log-panel::-webkit-scrollbar-track {
+            background: #2c3e50;
+            border-radius: 10px;
+        }
+
+        .log-panel::-webkit-scrollbar-thumb {
+            background: #e74c3c;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 60px;
+                padding: 20px 10px;
+            }
+
+            .sidebar h2 {
+                display: none;
+            }
+
+            .nav-tab {
+                justify-content: center;
+                font-size: 1.3rem;
+                padding: 12px 0;
+            }
+
+            .nav-tab span {
+                display: none;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px 20px;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px 20px;
+            }
+
+            .vehicle-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-add-vehicle {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="app">
+        <nav class="sidebar" aria-label="Navegacao principal">
+            <h2>Frota</h2>
+            <div class="nav-tabs" id="navTabs" role="tablist" aria-orientation="vertical">
+                <button class="nav-tab active" data-category="all" role="tab" aria-selected="true" tabindex="0">Favoritos Todos</button>
+                <button class="nav-tab" data-category="terrestres" role="tab" aria-selected="false" tabindex="-1">Veiculos Terrestres</button>
+                <button class="nav-tab" data-category="aereos" role="tab" aria-selected="false" tabindex="-1">Aeronaves</button>
+                <button class="nav-tab" data-category="ferroviarios" role="tab" aria-selected="false" tabindex="-1">Ferroviarios</button>
+                <button class="nav-tab" data-category="maritimos" role="tab" aria-selected="false" tabindex="-1">Maritimos</button>
+                <button class="nav-tab" data-category="militares" role="tab" aria-selected="false" tabindex="-1">Militares</button>
+                <button class="nav-tab" data-category="inteligentes" role="tab" aria-selected="false" tabindex="-1">Inteligentes</button>
+                <button class="nav-tab" data-category="especiais" role="tab" aria-selected="false" tabindex="-1">Especiais</button>
+            </div>
+        </nav>
 
-<h1>Gerenciador de Veículos</h1>
+        <div class="main-content">
+            <header>
+                <h1><span>Data Control</span> Sistema de Gestao</h1>
+                <input type="text" class="search-box" placeholder="Buscar veiculos..." id="searchBox">
+            </header>
 
-<label for="veiculoSelect">Selecione um veículo:</label><br />
-<select id="veiculoSelect">
-  <option value="">-- Escolha um veículo --</option>
-</select>
+            <div class="stats-bar">
+                <div class="stat-card" id="totalVehicles">19 Veiculos</div>
+                <div class="stat-card" id="activeVehicles">0 Ativos</div>
+                <div class="stat-card" id="connectedVehicles">0 Conectados</div>
+                <div class="stat-card" id="secureVehicles">0 Seguros</div>
+            </div>
 
-<div id="info"></div>
+            <div class="content-area">
+                <div class="vehicle-grid" id="vehicleContainer"></div>
 
-<div id="actions"></div>
+                <div class="log-panel" id="logPanel">
+                    <h3>Log de Atividades</h3>
+                    <div id="logContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div id="output"></div>
+    <button class="btn-add-vehicle" id="openModalBtn" title="Cadastrar Veiculo">+</button>
 
-<h2>Tabela de Visão Geral de Veículos</h2>
-<table id="tabelaVeiculos">
-  <thead>
-    <tr>
-      <th>Nome</th>
-      <th>Tipo</th>
-      <th>Capacidade</th>
-      <th>Combustível</th>
-      <th>Características</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+    <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal">
+            <h3 id="modalTitle">Cadastrar Novo Veiculo</h3>
+            <form id="vehicleForm">
+                <input type="text" id="name" placeholder="Nome" required>
+                <input type="text" id="type" placeholder="Tipo" required>
+                <select id="category" required>
+                    <option value="">Categoria</option>
+                    <option value="terrestres">Terrestres</option>
+                    <option value="aereos">Aereos</option>
+                    <option value="ferroviarios">Ferroviarios</option>
+                    <option value="maritimos">Maritimos</option>
+                    <option value="militares">Militares</option>
+                    <option value="inteligentes">Inteligentes</option>
+                    <option value="especiais">Especiais</option>
+                </select>
+                <input type="number" id="capacity" placeholder="Capacidade" required min="1">
+                <input type="text" id="fuel" placeholder="Combustivel" required>
+                <input type="text" id="emoji" placeholder="Icone representativo" required>
+                <div class="modal-buttons">
+                    <button type="button" class="btn secondary" id="closeModalBtn">Cancelar</button>
+                    <button type="submit" class="btn primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-<script>
-// Dados simulados baseados no código Python
-const veiculos = [
-  { nome: "Fusca", tipo: "Carro", capacidade: 4, combustivel: "gasolina", caracteristicas: "Capacidade: 4 pessoas - Combustível: gasolina - Rodas: 4 - Portas: 2", metodos: ["ligar", "mover", "desligar"] },
-  { nome: "Honda CG", tipo: "Moto", capacidade: 2, combustivel: "gasolina", caracteristicas: "Capacidade: 2 pessoas - Combustível: gasolina - Rodas: 2 - Cilindrada: 160cc", metodos: ["ligar", "mover", "desligar"] },
-  { nome: "Scania", tipo: "Caminhao", capacidade: 3, combustivel: "diesel", caracteristicas: "Capacidade: 3 pessoas - Combustível: diesel - Rodas: 6 - Carga Máxima: 30 toneladas", metodos: ["ligar", "mover", "desligar"] },
-  { nome: "Marcopolo", tipo: "Onibus", capacidade: 50, combustivel: "diesel", caracteristicas: "Capacidade: 50 pessoas - Combustível: diesel - Rodas: 8 - Tipo: urbano", metodos: ["ligar", "mover", "desligar"] },
-  { nome: "Gulfstream", tipo: "JatoExecutivo", capacidade: 12, combustivel: "querosene", caracteristicas: "Capacidade: 12 pessoas - Combustível: querosene - Alcance: 6000 km - Luxo: alto luxo", metodos: ["ligar", "mover", "desligar"] },
-  { nome: "Esquilo", tipo: "Helicoptero", capacidade: 6, combustivel: "querosene", caracteristicas: "Capacidade: 6 pessoas - Combustível: querosene - Alcance: 800 km - Rotores: 1", metodos: ["ligar", "mover", "desligar"] },
-  { nome: "Trem Bala", tipo: "Trem", capacidade: 600, combustivel: "eletricidade", caracteristicas: "Capacidade: 600 pessoas - Combustível: eletricidade - Trilhos: true - Tipo: passageiros", metodos: ["ligar", "mover", "desligar"] },
-  { nome: "Titanic", tipo: "Navio", capacidade: 3000, combustivel: "carvão", caracteristicas: "Capacidade: 3000 pessoas - Combustível: carvão - Tamanho: gigante - Tipo: passageiros", metodos: ["ligar", "mover", "desligar"] },
-  { nome: "Barco de Pesca", tipo: "Barco", capacidade: 10, combustivel: "diesel", caracteristicas: "Capacidade: 10 pessoas - Combustível: diesel - Tamanho: pequeno - Finalidade: pesca", metodos: ["ligar", "mover", "desligar"] },
-  { nome: "DuckWheels", tipo: "VeiculoAnfibio", capacidade: 6, combustivel: "diesel", caracteristicas: "Capacidade: 6 pessoas - Combustível: diesel - Rodas: 4 - Tamanho: médio", metodos: ["ligar", "mover", "desligar"] },
-  { nome: "Falcon 9", tipo: "Foguete", capacidade: 50, combustivel: "querosene", caracteristicas: "Capacidade: 50 pessoas - Combustível: querosene - Alcance: 28000 km - Carga: satélite Starlink", metodos: ["ligar", "mover", "desligar", "lancar"] },
-  { nome: "Leopard 2", tipo: "Tanque", capacidade: 4, combustivel: "diesel", caracteristicas: "Capacidade: 4 pessoas - Combustível: diesel - Tipo Militar: pesada - Calibre: 120mm", metodos: ["ligar", "mover", "desligar", "atirar"] },
-  { nome: "U-Boat", tipo: "Submarino", capacidade: 50, combustivel: "nuclear", caracteristicas: "Capacidade: 50 pessoas - Combustível: nuclear - Tipo Militar: grande - Profundidade máxima: 500m", metodos: ["ligar", "mover", "desligar", "lancar_torpedo"] },
-  { nome: "USS Nimitz", tipo: "PortaAvioes", capacidade: 5000, combustivel: "nuclear", caracteristicas: "Capacidade: 5000 pessoas - Combustível: nuclear - Tipo Militar: gigante - Aeronaves a bordo: 90", metodos: ["ligar", "mover", "desligar", "lancar_aviao"] },
-  { nome: "Predator", tipo: "DroneMilitar", capacidade: 2, combustivel: "querosene", caracteristicas: "Capacidade: 2 pessoas - Combustível: querosene - Alcance: 1000 km - Armamento: mísseis Hellfire", metodos: ["ligar", "mover", "desligar", "atacar"] },
-  { nome: "F-22 Raptor", tipo: "CacaMilitar", capacidade: 1, combustivel: "querosene", caracteristicas: "Capacidade: 1 pessoa - Combustível: querosene - Alcance: 3000 km - Velocidade máxima: 2400 km/h", metodos: ["ligar", "mover", "desligar", "manobra"] },
-  { nome: "Tesla Model S", tipo: "CarroInteligente", capacidade: 5, combustivel: "elétrico", caracteristicas: "Capacidade: 5 pessoas - Combustível: elétrico - Rodas: 4 - Portas: 4", metodos: ["ligar", "mover", "desligar", "atualizar_localizacao", "rastrear", "conectar_wifi", "ativar_alarme"] },
-  { nome: "Sea Explorer", tipo: "NavioInteligente", capacidade: 200, combustivel: "diesel", caracteristicas: "Capacidade: 200 pessoas - Combustível: diesel - Tamanho: grande - Tipo: carga", metodos: ["ligar", "mover", "desligar", "atualizar_localizacao", "rastrear", "conectar_wifi", "ativar_alarme"] },
-  { nome: "Drone X", tipo: "DroneInteligente", capacidade: 1, combustivel: "eletricidade", caracteristicas: "Capacidade: 1 pessoa - Combustível: eletricidade - Alcance: 50 km - Armamento: câmera HD", metodos: ["ligar", "mover", "desligar", "atualizar_localizacao", "rastrear", "conectar_wifi", "ativar_alarme"] }
-];
+    <script>
+        // Dados dos veiculos (todos os 19 ja cadastrados)
+        const vehicles = [
+            {
+                id: 1, name: "Fusca", type: "Carro", category: "terrestres",
+                capacity: 4, fuel: "gasolina", doors: 2, wheels: 4,
+                emoji: "[CAR]", specs: { Portas: 2, Rodas: 4 }
+            },
+            {
+                id: 2, name: "Honda CG", type: "Moto", category: "terrestres",
+                capacity: 2, fuel: "gasolina", cylinders: 160, wheels: 2,
+                emoji: "[MOT]", specs: { Cilindrada: "160cc", Rodas: 2 }
+            },
+            {
+                id: 3, name: "Scania", type: "Caminhao", category: "terrestres",
+                capacity: 3, fuel: "diesel", maxLoad: 30, wheels: 6,
+                emoji: "[TRUK]", specs: { "Carga Maxima": "30t", Rodas: 6 }
+            },
+            {
+                id: 4, name: "Marcopolo", type: "Onibus", category: "terrestres",
+                capacity: 50, fuel: "diesel", busType: "urbano", wheels: 8,
+                emoji: "[BUS]", specs: { Tipo: "urbano", Rodas: 8 }
+            },
+            {
+                id: 5, name: "Gulfstream", type: "Jato Executivo", category: "aereos",
+                capacity: 12, fuel: "kerosene", range: 6000, luxury: "alto luxo",
+                emoji: "[JET]", specs: { Alcance: "6000km", Luxo: "alto luxo" }
+            },
+            {
+                id: 6, name: "Esquilo", type: "Helicoptero", category: "aereos",
+                capacity: 6, fuel: "kerosene", range: 800, rotors: 1,
+                emoji: "[FAKE_HCOPTER]", specs: { Alcance: "800km", Rotores: 1 }
+            },
+            {
+                id: 7, name: "Trem Bala", type: "Trem", category: "ferroviarios",
+                capacity: 600, fuel: "eletricidade", trainType: "passageiros",
+                emoji: "[TRAIN]", specs: { Tipo: "passageiros", Trilhos: "Sim" }
+            },
+            {
+                id: 8, name: "Titanic", type: "Navio", category: "maritimos",
+                capacity: 3000, fuel: "carvao", size: "gigante", shipType: "passageiros",
+                emoji: "[SHIP]", specs: { Tamanho: "gigante", Tipo: "passageiros" }
+            },
+            {
+                id: 9, name: "Barco de Pesca", type: "Barco", category: "maritimos",
+                capacity: 10, fuel: "diesel", size: "pequeno", purpose: "pesca",
+                emoji: "[BOAT]", specs: { Tamanho: "pequeno", Finalidade: "pesca" }
+            },
+            {
+                id: 10, name: "DuckWheels", type: "Veiculo Anfibio", category: "especiais",
+                capacity: 6, fuel: "diesel", wheels: 4, size: "medio",
+                emoji: "[AMPH]", specs: { Rodas: 4, Tamanho: "medio" }
+            },
+            {
+                id: 11, name: "Falcon 9", type: "Foguete", category: "especiais",
+                capacity: 50, fuel: "kerosene", range: 28000, cargo: "satelite Starlink",
+                emoji: "[ROCKET]", specs: { Alcance: "28000km", Carga: "satelite Starlink" }
+            },
+            {
+                id: 12, name: "Leopard 2", type: "Tanque", category: "militares",
+                capacity: 4, fuel: "diesel", militaryType: "pesada", caliber: 120,
+                emoji: "[MIL]", specs: { "Tipo Militar": "pesada", Calibre: "120mm" }
+            },
+            {
+                id: 13, name: "U-Boat", type: "Submarino", category: "militares",
+                capacity: 50, fuel: "nuclear", militaryType: "grande", maxDepth: 500,
+                emoji: "[SUB]", specs: { "Tipo Militar": "grande", "Profundidade Maxima": "500m" }
+            },
+            {
+                id: 14, name: "USS Nimitz", type: "Porta Avioes", category: "militares",
+                capacity: 5000, fuel: "nuclear", militaryType: "gigante", aircraft: 90,
+                emoji: "[CARR]", specs: { "Tipo Militar": "gigante", "Aeronaves a bordo": 90 }
+            },
+            {
+                id: 15, name: "Predator", type: "Drone Militar", category: "militares",
+                capacity: 2, fuel: "kerosene", range: 1000, weapon: "misencoes Hellfire",
+                emoji: "[DRONE]", specs: { Alcance: "1000km", Armamento: "misencoes Hellfire" }
+            },
+            {
+                id: 16, name: "F-22 Raptor", type: "Caca Militar", category: "militares",
+                capacity: 1, fuel: "kerosene", range: 3000, maxSpeed: 2400,
+                emoji: "[PLANE]", specs: { Alcance: "3000km", "Velocidade Maxima": "2400 km/h" }
+            },
+            {
+                id: 17, name: "Tesla Model S", type: "Carro Inteligente", category: "inteligentes",
+                capacity: 5, fuel: "eletrico", doors: 4, wheels: 4,
+                emoji: "[SMART]", specs: { Portas: 4, "Sistema": "Inteligente" }, smart: true
+            },
+            {
+                id: 18, name: "Sea Explorer", type: "Navio Inteligente", category: "inteligentes",
+                capacity: 200, fuel: "diesel", size: "grande", shipType: "carga",
+                emoji: "[SHIPI]", specs: { Tamanho: "grande", "Sistema": "Inteligente" }, smart: true
+            },
+            {
+                id: 19, name: "Drone X", type: "Drone Inteligente", category: "inteligentes",
+                capacity: 1, fuel: "eletricidade", range: 50, weapon: "camera HD",
+                emoji: "[DRONEI]", specs: { Alcance: "50km", "Sistema": "Inteligente" }, smart: true
+            }
+        ];
 
-// Estado dos veículos (ligado/desligado, localização, conectado, alarme)
-const estadoVeiculos = {};
-veiculos.forEach(v => {
-  estadoVeiculos[v.nome] = {
-    ligado: false,
-    localizacao: "Desconhecida",
-    conectado: false,
-    alarme_ativo: false
-  };
-});
+        // Estado dos veiculos
+        let vehicleStates = {};
+        let currentCategory = 'all';
+        let searchTerm = '';
+        let logEntries = [];
 
-const veiculoSelect = document.getElementById("veiculoSelect");
-const infoDiv = document.getElementById("info");
-const actionsDiv = document.getElementById("actions");
-const outputDiv = document.getElementById("output");
-const tabelaBody = document.querySelector("#tabelaVeiculos tbody");
-
-// Preenche o select com os veículos
-function preencherSelect() {
-  veiculos.forEach((v, i) => {
-    const option = document.createElement("option");
-    option.value = i;
-    option.textContent = v.nome + " (" + v.tipo + ")";
-    veiculoSelect.appendChild(option);
-  });
-}
-
-// Atualiza a área de informações do veículo selecionado
-function mostrarInfo(veiculo) {
-  if (!veiculo) {
-    infoDiv.innerHTML = "";
-    actionsDiv.innerHTML = "";
-    outputDiv.innerHTML = "";
-    return;
-  }
-  const estado = estadoVeiculos[veiculo.nome];
-  infoDiv.innerHTML = `
-    <h3>${veiculo.nome} - ${veiculo.tipo}</h3>
-    <p><strong>Capacidade:</strong> ${veiculo.capacidade} pessoas</p>
-    <p><strong>Combustível:</strong> ${veiculo.combustivel}</p>
-    <p><strong>Características:</strong> ${veiculo.caracteristicas}</p>
-    <p><strong>Status:</strong> ${estado.ligado ? "Ligado" : "Desligado"}</p>
-    <p><strong>Localização:</strong> ${estado.localizacao}</p>
-    <p><strong>Conectado Wi-Fi:</strong> ${estado.conectado ? "Sim" : "Não"}</p>
-    <p><strong>Alarme:</strong> ${estado.alarme_ativo ? "Ativado" : "Desativado"}</p>
-  `;
-}
-
-// Cria botões de ação conforme métodos disponíveis
-function criarBotoes(veiculo) {
-  actionsDiv.innerHTML = "";
-  if (!veiculo) return;
-
-  const metodos = veiculo.metodos;
-
-  function criarBotao(texto, onClick) {
-    const btn = document.createElement("button");
-    btn.textContent = texto;
-    btn.className = "action-btn";
-    btn.onclick = onClick;
-    actionsDiv.appendChild(btn);
-  }
-
-  if (metodos.includes("ligar")) {
-    criarBotao("Ligar", () => {
-      const estado = estadoVeiculos[veiculo.nome];
-      if (estado.ligado) {
-        outputDiv.textContent = `${veiculo.nome} já está ligado.`;
-      } else {
-        estado.ligado = true;
-        outputDiv.textContent = `${veiculo.nome} foi ligado.`;
-        mostrarInfo(veiculo);
-      }
-    });
-  }
-
-  if (metodos.includes("mover")) {
-    criarBotao("Mover", () => {
-      const estado = estadoVeiculos[veiculo.nome];
-      if (!estado.ligado) {
-        outputDiv.textContent = `Não é possível mover. ${veiculo.nome} está desligado.`;
-      } else {
-        let msg = "";
-        if (veiculo.tipo === "VeiculoAnfibio") {
-          msg = `${veiculo.nome} pode se mover tanto em terra quanto na água.`;
-        } else {
-          msg = `${veiculo.nome} está se movendo.`;
+        // Inicializar estados
+        function initVehicleStates() {
+            vehicles.forEach(v => {
+                vehicleStates[v.id] = {
+                    powered: false,
+                    location: "Desconhecida",
+                    connected: false,
+                    secure: false,
+                    moving: false
+                };
+            });
         }
-        outputDiv.textContent = msg;
-      }
-    });
-  }
 
-  if (metodos.includes("desligar")) {
-    criarBotao("Desligar", () => {
-      const estado = estadoVeiculos[veiculo.nome];
-      if (!estado.ligado) {
-        outputDiv.textContent = `${veiculo.nome} já está desligado.`;
-      } else {
-        estado.ligado = false;
-        outputDiv.textContent = `${veiculo.nome} foi desligado.`;
-        mostrarInfo(veiculo);
-      }
-    });
-  }
+        // Log
+        function log(message, vehicleName = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = {
+                time: timestamp,
+                message: message,
+                vehicle: vehicleName
+            };
+            logEntries.unshift(entry);
+            if (logEntries.length > 50) logEntries.pop();
+            updateLogDisplay();
+        }
 
-  // Métodos militares
-  if (metodos.includes("atirar")) {
-    criarBotao("Atirar", () => {
-      outputDiv.textContent = `${veiculo.nome} disparou um projétil de 120mm!`;
-    });
-  }
-  if (metodos.includes("lancar_torpedo")) {
-    criarBotao("Lançar Torpedo", () => {
-      outputDiv.textContent = `${veiculo.nome} lançou um torpedo!`;
-    });
-  }
-  if (metodos.includes("lancar_aviao")) {
-    criarBotao("Lançar Avião", () => {
-      outputDiv.textContent = `${veiculo.nome} lançou um avião de combate!`;
-    });
-  }
-  if (metodos.includes("atacar")) {
-    criarBotao("Atacar", () => {
-      outputDiv.textContent = `${veiculo.nome} disparou mísseis Hellfire!`;
-    });
-  }
-  if (metodos.includes("manobra")) {
-    criarBotao("Manobra", () => {
-      outputDiv.textContent = `${veiculo.nome} realizou uma manobra evasiva supersônica!`;
-    });
-  }
-  if (metodos.includes("lancar")) {
-    criarBotao("Lançar", () => {
-      outputDiv.textContent = `${veiculo.nome} foi lançado ao espaço com satélite Starlink.`;
-    });
-  }
+        function updateLogDisplay() {
+            const container = document.getElementById('logContainer');
+            container.innerHTML = logEntries.map(entry => `
+                <div class="log-entry">
+                    <span class="timestamp">[${entry.time}]</span> 
+                    ${entry.vehicle ? '<strong>${entry.vehicle}</strong>: ' : ''}${entry.message}
+                </div>
+            `).join('');
+        }
 
-  // Métodos mixins inteligentes
-  if (metodos.includes("atualizar_localizacao")) {
-    criarBotao("Atualizar Localização", () => {
-      const estado = estadoVeiculos[veiculo.nome];
-      estado.localizacao = "Base Alpha";
-      outputDiv.textContent = `${veiculo.nome} agora está em ${estado.localizacao}`;
-      mostrarInfo(veiculo);
-    });
-  }
-  if (metodos.includes("rastrear")) {
-    criarBotao("Rastrear", () => {
-      const estado = estadoVeiculos[veiculo.nome];
-      outputDiv.textContent = `${veiculo.nome} localizado em ${estado.localizacao}`;
-    });
-  }
-  if (metodos.includes("conectar_wifi")) {
-    criarBotao("Conectar Wi-Fi", () => {
-      const estado = estadoVeiculos[veiculo.nome];
-      estado.conectado = true;
-      outputDiv.textContent = `${veiculo.nome} conectado à rede RedeSegura`;
-      mostrarInfo(veiculo);
-    });
-  }
-  if (metodos.includes("ativar_alarme")) {
-    criarBotao("Ativar Alarme", () => {
-      const estado = estadoVeiculos[veiculo.nome];
-      estado.alarme_ativo = true;
-      outputDiv.textContent = `${veiculo.nome} com alarme ativado!`;
-      mostrarInfo(veiculo);
-    });
-  }
-  if (metodos.includes("desativar_alarme")) {
-    criarBotao("Desativar Alarme", () => {
-      const estado = estadoVeiculos[veiculo.nome];
-      estado.alarme_ativo = false;
-      outputDiv.textContent = `${veiculo.nome} com alarme desativado!`;
-      mostrarInfo(veiculo);
-    });
-  }
-}
+        // Estatisticas
+        function updateStats() {
+            const total = vehicles.length;
+            const active = Object.values(vehicleStates).filter(s => s.powered).length;
+            const connected = Object.values(vehicleStates).filter(s => s.connected).length;
+            const secure = Object.values(vehicleStates).filter(s => s.secure).length;
 
-// Preenche a tabela geral
-function preencherTabela() {
-  tabelaBody.innerHTML = "";
-  veiculos.forEach(v => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${v.nome}</td>
-      <td>${v.tipo}</td>
-      <td>${v.capacidade}</td>
-      <td>${v.combustivel}</td>
-      <td>${v.caracteristicas}</td>
-    `;
-    tabelaBody.appendChild(tr);
-  });
-}
+            document.getElementById('totalVehicles').textContent = '${total} Veiculos';
+            document.getElementById('activeVehicles').textContent = '${active} Ativos';
+            document.getElementById('connectedVehicles').textContent = '${connected} Conectados';
+            document.getElementById('secureVehicles').textContent = '${secure} Seguros';
+        }
 
-// Evento ao mudar seleção
-veiculoSelect.addEventListener("change", () => {
-  const idx = veiculoSelect.value;
-  if (idx === "") {
-    mostrarInfo(null);
-    criarBotoes(null);
-  } else {
-    const veiculo = veiculos[idx];
-    mostrarInfo(veiculo);
-    criarBotoes(veiculo);
-    outputDiv.textContent = "";
-  }
-});
+        // Renderizar veiculos
+        function renderVehicles() {
+            const container = document.getElementById('vehicleContainer');
 
-// Inicialização
-preencherSelect();
-preencherTabela();
+            let filteredVehicles = vehicles.filter(vehicle => {
+                const categoryMatch = currentCategory === 'all' || vehicle.category === currentCategory;
+                const searchMatch = searchTerm === '' ||
+                    vehicle.name.toLowerCase().includes(searchTerm) ||
+                    vehicle.type.toLowerCase().includes(searchTerm) ||
+                    vehicle.fuel.toLowerCase().includes(searchTerm);
 
-</script>
+                return categoryMatch && searchMatch;
+            });
 
+            container.innerHTML = filteredVehicles.map(vehicle => {
+                const state = vehicleStates[vehicle.id];
+                const isActive = state.powered;
+                const isMoving = state.moving;
+
+                return `
+                    <div class="vehicle-card ${isActive ? 'active' : ''} ${isMoving ? 'moving' : ''}" id="vehicle-${vehicle.id}">
+                        <div class="vehicle-header">
+                            <div>
+                                <span>${vehicle.emoji} </span>
+                                <div class="vehicle-name">
+                                    <span class="status-indicator ${isActive ? 'status-on' : 'status-off'}"></span>
+                                    ${vehicle.name}
+                                    ${isMoving ? '<span style="color:#f39c12; font-weight:700; margin-left:10px;">Movendo...</span>' : ''}
+                                </div>
+                            </div>
+                            <div class="vehicle-type">${vehicle.type}</div>
+                        </div>
+
+                        <div class="vehicle-specs">
+                            <div class="spec-row">
+                                <span class="spec-label">Capacidade:</span>
+                                <span class="spec-value">${vehicle.capacity} pessoas</span>
+                            </div>
+                            <div class="spec-row">
+                                <span class="spec-label">Combustivel:</span>
+                                <span class="spec-value">${vehicle.fuel}</span>
+                            </div>
+                            ${Object.entries(vehicle.specs || {}).map(([key, value]) => `
+                                <div class="spec-row">
+                                    <span class="spec-label">${key}:</span>
+                                    <span class="spec-value">${value}</span>
+                                </div>
+                            `).join('')}
+                            ${vehicle.smart ? `
+                                <div class="spec-row">
+                                    <span class="spec-label">Localizacao:</span>
+                                    <span class="spec-value">${state.location}</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-label">WiFi:</span>
+                                    <span class="spec-value">${state.connected ? '[CONNECTED]' : '[DISCONNECTED]'}</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-label">Seguranca:</span>
+                                    <span class="spec-value">${state.secure ? '[SECURE]' : '[INSECURE]'}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="vehicle-controls">
+                            <button class="control-btn ${isActive ? 'danger' : 'primary'}" 
+                                    onclick="togglePower(${vehicle.id})" ${isMoving ? 'disabled' : ''}>
+                                ${isActive ? 'Desligar' : 'Ligar'}
+                            </button>
+
+                            <button class="control-btn info" 
+                                    onclick="moveVehicle(${vehicle.id})"
+                                    ${!isActive || isMoving ? 'disabled' : ''}>
+                                Mover
+                            </button>
+
+                            ${['Tanque', 'Submarino', 'Porta Avioes', 'Drone Militar', 'Drone Inteligente', 'Caca Militar', 'Foguete'].includes(vehicle.type) ? `
+                                <button class="control-btn warning" 
+                                        onclick="performSpecialAction(${vehicle.id})"
+                                        ${!isActive || isMoving ? 'disabled' : ''}>
+                                    Acao
+                                </button>
+                            ` : ''}
+
+                            ${vehicle.smart ? `
+                                <button class="control-btn info" 
+                                        onclick="updateLocation(${vehicle.id})"
+                                        ${!isActive || isMoving ? 'disabled' : ''}>
+                                    Atualizar Local
+                                </button>
+                                <button class="control-btn info" 
+                                        onclick="toggleConnection(${vehicle.id})"
+                                        ${!isActive || isMoving ? 'disabled' : ''}>
+                                    ${state.connected ? 'Desconectar' : 'Conectar'}
+                                </button>
+                                <button class="control-btn info" 
+                                        onclick="toggleSecurity(${vehicle.id})"
+                                        ${!isActive || isMoving ? 'disabled' : ''}>
+                                    ${state.secure ? 'Desativar Alarme' : 'Ativar Alarme'}
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Toggle power
+        function togglePower(vehicleId) {
+            const vehicle = vehicles.find(v => v.id === vehicleId);
+            const state = vehicleStates[vehicleId];
+
+            state.powered = !state.powered;
+
+            if (state.powered) {
+                log('foi ligado.', vehicle.name);
+            } else {
+                log('foi desligado.', vehicle.name);
+                state.connected = false;
+                state.secure = false;
+            }
+
+            renderVehicles();
+            updateStats();
+        }
+
+        // Move vehicle
+        function moveVehicle(vehicleId) {
+            const vehicle = vehicles.find(v => v.id === vehicleId);
+            const state = vehicleStates[vehicleId];
+
+            if (!state.powered) {
+                log('não pode se mover - está desligado.', vehicle.name);
+                return;
+            }
+
+            if (state.moving) {
+                log('já está se movendo.', vehicle.name);
+                return;
+            }
+
+            state.moving = true;
+            renderVehicles();
+
+            let moveMessage = "está se movendo.";
+
+            if (vehicle.type === "Veiculo Anfibio") {
+                moveMessage = "pode se mover tanto em terra quanto na água.";
+            } else if (vehicle.category === "aereos") {
+                moveMessage = "está voando.";
+            } else if (vehicle.category === "maritimos") {
+                moveMessage = "está navegando.";
+            } else if (vehicle.category === "ferroviarios") {
+                moveMessage = "está nos trilhos.";
+            }
+
+            log(moveMessage, vehicle.name);
+
+            // Simula movimento por 3 segundos
+            setTimeout(() => {
+                state.moving = false;
+                log('parou de se mover.', vehicle.name);
+                renderVehicles();
+            }, 3000);
+        }
+
+        // Perform special action
+        function performSpecialAction(vehicleId) {
+            const vehicle = vehicles.find(v => v.id === vehicleId);
+            const state = vehicleStates[vehicleId];
+
+            if (!state.powered) {
+                log('não pode realizar ação - está desligado.', vehicle.name);
+                return;
+            }
+
+            let actionMessage = "";
+
+            switch(vehicle.type) {
+                case "Tanque":
+                    actionMessage = 'disparou um projétil de ${vehicle.caliber}mm!';
+                    break;
+                case "Submarino":
+                    actionMessage = "lançou um torpedo!";
+                    break;
+                case "Porta Avioes":
+                    actionMessage = "lançou um avião de combate!";
+                    break;
+                case "Drone Militar":
+                case "Drone Inteligente":
+                    actionMessage = 'disparou ${vehicle.weapon}!';
+                    break;
+                case "Caca Militar":
+                    actionMessage = "realizou uma manobra evasiva supersônica!";
+                    break;
+                case "Foguete":
+                    actionMessage = 'foi lançado ao espaço com ${vehicle.cargo}';
+                    break;
+                default:
+                    actionMessage = "executou ação especial.";
+            }
+
+            log(actionMessage, vehicle.name);
+        }
+
+        // Update location
+        function updateLocation(vehicleId) {
+            const vehicle = vehicles.find(v => v.id === vehicleId);
+            const state = vehicleStates[vehicleId];
+
+            if (!vehicle.smart) return;
+
+            const locations = ["Base Alpha", "Setor Beta", "Zona Gamma", "Porto Delta", "Aeroporto Echo"];
+            const newLocation = locations[Math.floor(Math.random() * locations.length)];
+
+            state.location = newLocation;
+            log('agora está em ${newLocation}', vehicle.name);
+            renderVehicles();
+        }
+
+        // Toggle connection
+        function toggleConnection(vehicleId) {
+            const vehicle = vehicles.find(v => v.id === vehicleId);
+            const state = vehicleStates[vehicleId];
+
+            if (!vehicle.smart || !state.powered) return;
+
+            state.connected = !state.connected;
+
+            if (state.connected) {
+                log('conectado à rede RedeSegura', vehicle.name);
+            } else {
+                log('desconectado da rede', vehicle.name);
+            }
+
+            renderVehicles();
+            updateStats();
+        }
+
+        // Toggle security
+        function toggleSecurity(vehicleId) {
+            const vehicle = vehicles.find(v => v.id === vehicleId);
+            const state = vehicleStates[vehicleId];
+
+            if (!vehicle.smart || !state.powered) return;
+
+            state.secure = !state.secure;
+
+            if (state.secure) {
+                log('com alarme ativo!', vehicle.name);
+            } else {
+                log('com alarme inativo!', vehicle.name);
+            }
+
+            renderVehicles();
+            updateStats();
+        }
+
+        // Change category
+        function showCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.category === category);
+            });
+            renderVehicles();
+        }
+
+        // Filter vehicles
+        function filterVehicles(term) {
+            searchTerm = term.toLowerCase();
+            renderVehicles();
+        }
+
+        // Inicializacao
+        function init() {
+            initVehicleStates();
+            updateStats();
+            renderVehicles();
+
+            // Eventos de navegacao
+            document.getElementById('navTabs').addEventListener('click', e => {
+                if (e.target.classList.contains('nav-tab')) {
+                    showCategory(e.target.dataset.category);
+                }
+            });
+
+            // Evento de busca
+            document.getElementById('searchBox').addEventListener('input', e => {
+                filterVehicles(e.target.value);
+            });
+
+            // Modal
+            document.getElementById('openModalBtn').addEventListener('click', () => {
+                document.getElementById('modalOverlay').classList.add('active');
+            });
+
+            document.getElementById('closeModalBtn').addEventListener('click', () => {
+                document.getElementById('modalOverlay').classList.remove('active');
+            });
+
+            document.getElementById('modalOverlay').addEventListener('click', e => {
+                if (e.target === e.currentTarget) {
+                    e.currentTarget.classList.remove('active');
+                }
+            });
+
+            // Formulario de cadastro
+            document.getElementById('vehicleForm').addEventListener('submit', e => {
+                e.preventDefault();
+
+                const name = document.getElementById('name').value.trim();
+                const type = document.getElementById('type').value.trim();
+                const category = document.getElementById('category').value;
+                const capacity = parseInt(document.getElementById('capacity').value);
+                const fuel = document.getElementById('fuel').value.trim();
+                const emoji = document.getElementById('emoji').value.trim();
+
+                if (!name || !type || !category || !capacity || !fuel || !emoji) {
+                    alert('Por favor, preencha todos os campos corretamente.');
+                    return;
+                }
+
+                const newId = vehicles.length > 0 ? Math.max(...vehicles.map(v => v.id)) + 1 : 1;
+
+                const newVehicle = {
+                    id: newId,
+                    name,
+                    type,
+                    category,
+                    capacity,
+                    fuel,
+                    emoji,
+                    specs: {}
+                };
+
+                vehicles.push(newVehicle);
+                vehicleStates[newId] = {
+                    powered: false,
+                    location: "Desconhecida",
+                    connected: false,
+                    secure: false,
+                    moving: false
+                };
+
+                log('Veículo cadastrado com sucesso: ${name}');
+
+                e.target.reset();
+                document.getElementById('modalOverlay').classList.remove('active');
+                updateStats();
+                renderVehicles();
+            });
+        }
+
+        // Iniciar aplicacao
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
+</content>
+</create_file>
+
