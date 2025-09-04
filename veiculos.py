@@ -1,4 +1,3 @@
-# =====================================================
 # MIXINS EXTRAS
 class RastreadorGPS:
     """Permite rastrear a localização do veículo"""
@@ -43,7 +42,7 @@ class SistemaSeguranca:
 # CLASSE BASE VEÍCULO
 class Veiculo:
     """Classe base para todos os veículos"""
-    qtd_veiculos = 0  # Contador de veículos instanciados
+    qtd_veiculos = 1  # Contador de veículos instanciados
 
     def __init__(self, nome, capacidade, combustivel):
         self.nome = nome

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Veículos - Interface</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+  h1 { color: #333; }
+  select, button { padding: 8px; margin: 5px 0; font-size: 1em; }
+  #info, #output { background: #fff; padding: 15px; border-radius: 5px; margin-top: 10px; box-shadow: 0 0 5px #ccc; }
+  table { border-collapse: collapse; width: 100%; margin-top: 20px; background: #fff; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  th { background: #eee; }
+  button.action-btn { margin-right: 10px; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<h1>Gerenciador de Veículos</h1>
+
+<label for="veiculoSelect">Selecione um veículo:</label><br />
+<select id="veiculoSelect">
+  <option value="">-- Escolha um veículo --</option>
+</select>
+
+<div id="info"></div>
+
+<div id="actions"></div>
+
+<div id="output"></div>
+
+<h2>Tabela de Visão Geral de Veículos</h2>
+<table id="tabelaVeiculos">
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Tipo</th>
+      <th>Capacidade</th>
+      <th>Combustível</th>
+      <th>Características</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+// Dados simulados baseados no código Python
+const veiculos = [
+  { nome: "Fusca", tipo: "Carro", capacidade: 4, combustivel: "gasolina", caracteristicas: "Capacidade: 4 pessoas - Combustível: gasolina - Rodas: 4 - Portas: 2", metodos: ["ligar", "mover", "desligar"] },
+  { nome: "Honda CG", tipo: "Moto", capacidade: 2, combustivel: "gasolina", caracteristicas: "Capacidade: 2 pessoas - Combustível: gasolina - Rodas: 2 - Cilindrada: 160cc", metodos: ["ligar", "mover", "desligar"] },
+  { nome: "Scania", tipo: "Caminhao", capacidade: 3, combustivel: "diesel", caracteristicas: "Capacidade: 3 pessoas - Combustível: diesel - Rodas: 6 - Carga Máxima: 30 toneladas", metodos: ["ligar", "mover", "desligar"] },
+  { nome: "Marcopolo", tipo: "Onibus", capacidade: 50, combustivel: "diesel", caracteristicas: "Capacidade: 50 pessoas - Combustível: diesel - Rodas: 8 - Tipo: urbano", metodos: ["ligar", "mover", "desligar"] },
+  { nome: "Gulfstream", tipo: "JatoExecutivo", capacidade: 12, combustivel: "querosene", caracteristicas: "Capacidade: 12 pessoas - Combustível: querosene - Alcance: 6000 km - Luxo: alto luxo", metodos: ["ligar", "mover", "desligar"] },
+  { nome: "Esquilo", tipo: "Helicoptero", capacidade: 6, combustivel: "querosene", caracteristicas: "Capacidade: 6 pessoas - Combustível: querosene - Alcance: 800 km - Rotores: 1", metodos: ["ligar", "mover", "desligar"] },
+  { nome: "Trem Bala", tipo: "Trem", capacidade: 600, combustivel: "eletricidade", caracteristicas: "Capacidade: 600 pessoas - Combustível: eletricidade - Trilhos: true - Tipo: passageiros", metodos: ["ligar", "mover", "desligar"] },
+  { nome: "Titanic", tipo: "Navio", capacidade: 3000, combustivel: "carvão", caracteristicas: "Capacidade: 3000 pessoas - Combustível: carvão - Tamanho: gigante - Tipo: passageiros", metodos: ["ligar", "mover", "desligar"] },
+  { nome: "Barco de Pesca", tipo: "Barco", capacidade: 10, combustivel: "diesel", caracteristicas: "Capacidade: 10 pessoas - Combustível: diesel - Tamanho: pequeno - Finalidade: pesca", metodos: ["ligar", "mover", "desligar"] },
+  { nome: "DuckWheels", tipo: "VeiculoAnfibio", capacidade: 6, combustivel: "diesel", caracteristicas: "Capacidade: 6 pessoas - Combustível: diesel - Rodas: 4 - Tamanho: médio", metodos: ["ligar", "mover", "desligar"] },
+  { nome: "Falcon 9", tipo: "Foguete", capacidade: 50, combustivel: "querosene", caracteristicas: "Capacidade: 50 pessoas - Combustível: querosene - Alcance: 28000 km - Carga: satélite Starlink", metodos: ["ligar", "mover", "desligar", "lancar"] },
+  { nome: "Leopard 2", tipo: "Tanque", capacidade: 4, combustivel: "diesel", caracteristicas: "Capacidade: 4 pessoas - Combustível: diesel - Tipo Militar: pesada - Calibre: 120mm", metodos: ["ligar", "mover", "desligar", "atirar"] },
+  { nome: "U-Boat", tipo: "Submarino", capacidade: 50, combustivel: "nuclear", caracteristicas: "Capacidade: 50 pessoas - Combustível: nuclear - Tipo Militar: grande - Profundidade máxima: 500m", metodos: ["ligar", "mover", "desligar", "lancar_torpedo"] },
+  { nome: "USS Nimitz", tipo: "PortaAvioes", capacidade: 5000, combustivel: "nuclear", caracteristicas: "Capacidade: 5000 pessoas - Combustível: nuclear - Tipo Militar: gigante - Aeronaves a bordo: 90", metodos: ["ligar", "mover", "desligar", "lancar_aviao"] },
+  { nome: "Predator", tipo: "DroneMilitar", capacidade: 2, combustivel: "querosene", caracteristicas: "Capacidade: 2 pessoas - Combustível: querosene - Alcance: 1000 km - Armamento: mísseis Hellfire", metodos: ["ligar", "mover", "desligar", "atacar"] },
+  { nome: "F-22 Raptor", tipo: "CacaMilitar", capacidade: 1, combustivel: "querosene", caracteristicas: "Capacidade: 1 pessoa - Combustível: querosene - Alcance: 3000 km - Velocidade máxima: 2400 km/h", metodos: ["ligar", "mover", "desligar", "manobra"] },
+  { nome: "Tesla Model S", tipo: "CarroInteligente", capacidade: 5, combustivel: "elétrico", caracteristicas: "Capacidade: 5 pessoas - Combustível: elétrico - Rodas: 4 - Portas: 4", metodos: ["ligar", "mover", "desligar", "atualizar_localizacao", "rastrear", "conectar_wifi", "ativar_alarme"] },
+  { nome: "Sea Explorer", tipo: "NavioInteligente", capacidade: 200, combustivel: "diesel", caracteristicas: "Capacidade: 200 pessoas - Combustível: diesel - Tamanho: grande - Tipo: carga", metodos: ["ligar", "mover", "desligar", "atualizar_localizacao", "rastrear", "conectar_wifi", "ativar_alarme"] },
+  { nome: "Drone X", tipo: "DroneInteligente", capacidade: 1, combustivel: "eletricidade", caracteristicas: "Capacidade: 1 pessoa - Combustível: eletricidade - Alcance: 50 km - Armamento: câmera HD", metodos: ["ligar", "mover", "desligar", "atualizar_localizacao", "rastrear", "conectar_wifi", "ativar_alarme"] }
+];
+
+// Estado dos veículos (ligado/desligado, localização, conectado, alarme)
+const estadoVeiculos = {};
+veiculos.forEach(v => {
+  estadoVeiculos[v.nome] = {
+    ligado: false,
+    localizacao: "Desconhecida",
+    conectado: false,
+    alarme_ativo: false
+  };
+});
+
+const veiculoSelect = document.getElementById("veiculoSelect");
+const infoDiv = document.getElementById("info");
+const actionsDiv = document.getElementById("actions");
+const outputDiv = document.getElementById("output");
+const tabelaBody = document.querySelector("#tabelaVeiculos tbody");
+
+// Preenche o select com os veículos
+function preencherSelect() {
+  veiculos.forEach((v, i) => {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = v.nome + " (" + v.tipo + ")";
+    veiculoSelect.appendChild(option);
+  });
+}
+
+// Atualiza a área de informações do veículo selecionado
+function mostrarInfo(veiculo) {
+  if (!veiculo) {
+    infoDiv.innerHTML = "";
+    actionsDiv.innerHTML = "";
+    outputDiv.innerHTML = "";
+    return;
+  }
+  const estado = estadoVeiculos[veiculo.nome];
+  infoDiv.innerHTML = `
+    <h3>${veiculo.nome} - ${veiculo.tipo}</h3>
+    <p><strong>Capacidade:</strong> ${veiculo.capacidade} pessoas</p>
+    <p><strong>Combustível:</strong> ${veiculo.combustivel}</p>
+    <p><strong>Características:</strong> ${veiculo.caracteristicas}</p>
+    <p><strong>Status:</strong> ${estado.ligado ? "Ligado" : "Desligado"}</p>
+    <p><strong>Localização:</strong> ${estado.localizacao}</p>
+    <p><strong>Conectado Wi-Fi:</strong> ${estado.conectado ? "Sim" : "Não"}</p>
+    <p><strong>Alarme:</strong> ${estado.alarme_ativo ? "Ativado" : "Desativado"}</p>
+  `;
+}
+
+// Cria botões de ação conforme métodos disponíveis
+function criarBotoes(veiculo) {
+  actionsDiv.innerHTML = "";
+  if (!veiculo) return;
+
+  const metodos = veiculo.metodos;
+
+  function criarBotao(texto, onClick) {
+    const btn = document.createElement("button");
+    btn.textContent = texto;
+    btn.className = "action-btn";
+    btn.onclick = onClick;
+    actionsDiv.appendChild(btn);
+  }
+
+  if (metodos.includes("ligar")) {
+    criarBotao("Ligar", () => {
+      const estado = estadoVeiculos[veiculo.nome];
+      if (estado.ligado) {
+        outputDiv.textContent = `${veiculo.nome} já está ligado.`;
+      } else {
+        estado.ligado = true;
+        outputDiv.textContent = `${veiculo.nome} foi ligado.`;
+        mostrarInfo(veiculo);
+      }
+    });
+  }
+
+  if (metodos.includes("mover")) {
+    criarBotao("Mover", () => {
+      const estado = estadoVeiculos[veiculo.nome];
+      if (!estado.ligado) {
+        outputDiv.textContent = `Não é possível mover. ${veiculo.nome} está desligado.`;
+      } else {
+        let msg = "";
+        if (veiculo.tipo === "VeiculoAnfibio") {
+          msg = `${veiculo.nome} pode se mover tanto em terra quanto na água.`;
+        } else {
+          msg = `${veiculo.nome} está se movendo.`;
+        }
+        outputDiv.textContent = msg;
+      }
+    });
+  }
+
+  if (metodos.includes("desligar")) {
+    criarBotao("Desligar", () => {
+      const estado = estadoVeiculos[veiculo.nome];
+      if (!estado.ligado) {
+        outputDiv.textContent = `${veiculo.nome} já está desligado.`;
+      } else {
+        estado.ligado = false;
+        outputDiv.textContent = `${veiculo.nome} foi desligado.`;
+        mostrarInfo(veiculo);
+      }
+    });
+  }
+
+  // Métodos militares
+  if (metodos.includes("atirar")) {
+    criarBotao("Atirar", () => {
+      outputDiv.textContent = `${veiculo.nome} disparou um projétil de 120mm!`;
+    });
+  }
+  if (metodos.includes("lancar_torpedo")) {
+    criarBotao("Lançar Torpedo", () => {
+      outputDiv.textContent = `${veiculo.nome} lançou um torpedo!`;
+    });
+  }
+  if (metodos.includes("lancar_aviao")) {
+    criarBotao("Lançar Avião", () => {
+      outputDiv.textContent = `${veiculo.nome} lançou um avião de combate!`;
+    });
+  }
+  if (metodos.includes("atacar")) {
+    criarBotao("Atacar", () => {
+      outputDiv.textContent = `${veiculo.nome} disparou mísseis Hellfire!`;
+    });
+  }
+  if (metodos.includes("manobra")) {
+    criarBotao("Manobra", () => {
+      outputDiv.textContent = `${veiculo.nome} realizou uma manobra evasiva supersônica!`;
+    });
+  }
+  if (metodos.includes("lancar")) {
+    criarBotao("Lançar", () => {
+      outputDiv.textContent = `${veiculo.nome} foi lançado ao espaço com satélite Starlink.`;
+    });
+  }
+
+  // Métodos mixins inteligentes
+  if (metodos.includes("atualizar_localizacao")) {
+    criarBotao("Atualizar Localização", () => {
+      const estado = estadoVeiculos[veiculo.nome];
+      estado.localizacao = "Base Alpha";
+      outputDiv.textContent = `${veiculo.nome} agora está em ${estado.localizacao}`;
+      mostrarInfo(veiculo);
+    });
+  }
+  if (metodos.includes("rastrear")) {
+    criarBotao("Rastrear", () => {
+      const estado = estadoVeiculos[veiculo.nome];
+      outputDiv.textContent = `${veiculo.nome} localizado em ${estado.localizacao}`;
+    });
+  }
+  if (metodos.includes("conectar_wifi")) {
+    criarBotao("Conectar Wi-Fi", () => {
+      const estado = estadoVeiculos[veiculo.nome];
+      estado.conectado = true;
+      outputDiv.textContent = `${veiculo.nome} conectado à rede RedeSegura`;
+      mostrarInfo(veiculo);
+    });
+  }
+  if (metodos.includes("ativar_alarme")) {
+    criarBotao("Ativar Alarme", () => {
+      const estado = estadoVeiculos[veiculo.nome];
+      estado.alarme_ativo = true;
+      outputDiv.textContent = `${veiculo.nome} com alarme ativado!`;
+      mostrarInfo(veiculo);
+    });
+  }
+  if (metodos.includes("desativar_alarme")) {
+    criarBotao("Desativar Alarme", () => {
+      const estado = estadoVeiculos[veiculo.nome];
+      estado.alarme_ativo = false;
+      outputDiv.textContent = `${veiculo.nome} com alarme desativado!`;
+      mostrarInfo(veiculo);
+    });
+  }
+}
+
+// Preenche a tabela geral
+function preencherTabela() {
+  tabelaBody.innerHTML = "";
+  veiculos.forEach(v => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${v.nome}</td>
+      <td>${v.tipo}</td>
+      <td>${v.capacidade}</td>
+      <td>${v.combustivel}</td>
+      <td>${v.caracteristicas}</td>
+    `;
+    tabelaBody.appendChild(tr);
+  });
+}
+
+// Evento ao mudar seleção
+veiculoSelect.addEventListener("change", () => {
+  const idx = veiculoSelect.value;
+  if (idx === "") {
+    mostrarInfo(null);
+    criarBotoes(null);
+  } else {
+    const veiculo = veiculos[idx];
+    mostrarInfo(veiculo);
+    criarBotoes(veiculo);
+    outputDiv.textContent = "";
+  }
+});
+
+// Inicialização
+preencherSelect();
+preencherTabela();
+
+</script>
+
+</body>
+</html>
